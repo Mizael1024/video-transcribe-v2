@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
         e.preventDefault();
         const file = fileInput.files[0];
         if (!file) {
@@ -28,28 +28,40 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBar.style.width = '0%';
         progressText.textContent = '0%';
 
-        try {
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/upload', true);
 
-            if (!response.ok) {
-                const errorData = await response.json();
+        xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+                const percentComplete = (event.loaded / event.total) * 100;
+                progressBar.style.width = percentComplete + '%';
+                progressText.textContent = percentComplete.toFixed(2) + '%';
+            }
+        };
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                transcriptionText.value = data.transcription;
+                loading.classList.add('hidden');
+                result.classList.remove('hidden');
+            } else {
+                const errorData = JSON.parse(xhr.responseText);
                 throw new Error(errorData.error || 'Erro desconhecido durante o upload');
             }
+        };
 
-            const data = await response.json();
-            transcriptionText.value = data.transcription;
-            loading.classList.add('hidden');
-            result.classList.remove('hidden');
-        } catch (error) {
-            console.error('Erro:', error);
-            alert(`Erro durante o upload e transcrição: ${error.message}`);
-        } finally {
+        xhr.onerror = function() {
+            console.error('Erro:', xhr.statusText);
+            alert(`Erro durante o upload e transcrição: ${xhr.statusText}`);
+        };
+
+        xhr.onloadend = function() {
             loading.classList.add('hidden');
             progressContainer.classList.add('hidden');
-        }
+        };
+
+        xhr.send(formData);
     });
 
     downloadBtn.addEventListener('click', async () => {

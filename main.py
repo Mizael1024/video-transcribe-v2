@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = '/tmp'
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 150 * 1024 * 1024  # 150MB max file size
 
 ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'wmv', 'jpg', 'jpeg', 'png', 'gif'}
 
@@ -45,7 +45,7 @@ def upload_file():
                 # Transcribe audio using Whisper
                 model = whisper.load_model("base")
                 result = model.transcribe(audio_path, language=language)
-                transcription = result["text"]
+                transcription_text = result["text"]
                 
                 # Clean up temporary files
                 os.remove(filepath)
@@ -53,12 +53,12 @@ def upload_file():
             
             elif file_extension in {'jpg', 'jpeg', 'png', 'gif'}:
                 # Process image files
-                transcription = "Arquivo de imagem carregado com sucesso. A transcrição não está disponível para imagens."
+                transcription_text = "Arquivo de imagem carregado com sucesso. A transcrição não está disponível para imagens."
             
             else:
                 return jsonify({'error': 'Tipo de arquivo não suportado'}), 400
             
-            return jsonify({'transcription': transcription})
+            return jsonify({'transcription': transcription_text})
         return jsonify({'error': 'Tipo de arquivo não permitido'}), 400
     except Exception as e:
         return jsonify({'error': f'Erro interno do servidor: {str(e)}'}), 500
@@ -78,7 +78,7 @@ def download_transcription():
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
-    return jsonify({'error': 'O arquivo é muito grande. O tamanho máximo permitido é 50MB.'}), 413
+    return jsonify({'error': 'O arquivo é muito grande. O tamanho máximo permitido é 150MB.'}), 413
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
