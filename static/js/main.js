@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('upload-form');
     const fileInput = document.getElementById('file-input');
+    const languageSelect = document.getElementById('language-select');
     const loading = document.getElementById('loading');
     const result = document.getElementById('result');
     const transcriptionText = document.getElementById('transcription-text');
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('language', languageSelect.value);
 
         loading.classList.remove('hidden');
         result.classList.add('hidden');

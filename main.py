@@ -25,6 +25,9 @@ def upload_file():
         file = request.files['file']
         if file.filename == '':
             return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
+        
+        language = request.form.get('language', 'en')  # Default to English if no language is specified
+        
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -41,7 +44,7 @@ def upload_file():
                 
                 # Transcribe audio using Whisper
                 model = whisper.load_model("base")
-                result = model.transcribe(audio_path)
+                result = model.transcribe(audio_path, language=language)
                 transcription = result["text"]
                 
                 # Clean up temporary files
